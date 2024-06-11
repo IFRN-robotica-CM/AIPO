@@ -1,7 +1,9 @@
 #include "EspMQTTClient.h"
 #include <ArduinoJson.h>
 #include "ConnectDataLennedy.h"
+#include "RC522.h"
 
+RC522 sensor;
 
 #define DATA_INTERVAL 10000       // Intervalo para adquirir novos dados do sensor (milisegundos).
 // Os dados serão publidados depois de serem adquiridos valores equivalentes a janela do filtro
@@ -18,6 +20,8 @@ unsigned long availableIntevalPrevTime = 0; // will store last time "available" 
 
 void setup()
 {
+  sensor.initSensor();
+
   Serial.begin(115200);
 
   pinMode(LED_BUILTIN, OUTPUT);
@@ -124,16 +128,30 @@ void blinkLed() {
     digitalWrite(LED_BUILTIN, HIGH); //desliga led
   }
 }
-
+void sendDataCard(String card){
+  client.publish(topic_name, card);
+}
 void loop()
 {
   unsigned long time_ms = millis();
 
   client.loop();
+  
+  String card = "orna";
+  
+  sensor.readCard(card);
+  Serial.print(card);
+/*
+  if (card != "") {
+    sendDataCard(card);
+   // client.executeDelayed(1 * 100, metodoPublisher);
+    dataIntevalPrevTime = time_ms;
+  }*/
 
   if (time_ms - dataIntevalPrevTime >= DATA_INTERVAL) {
     client.executeDelayed(1 * 100, metodoPublisher);
     dataIntevalPrevTime = time_ms;
+    sendDataCard(card);
   }
 
   if (time_ms - availableIntevalPrevTime >= AVAILABLE_INTERVAL) {
@@ -142,5 +160,7 @@ void loop()
   }
 
   blinkLed();
+
+  
 
 }

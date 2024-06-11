@@ -1,4 +1,4 @@
-const String topic_name = "/bomba1";
+const String topic_name = "/porta/id";
 
 
 EspMQTTClient client(
